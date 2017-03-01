@@ -5,49 +5,49 @@ Gassensors::Gassensors(uint8_t pin, uint8_t type, uint8_t Gas_Name) {
   _type = type;
   //_Gas_Name = Gas_Name;
   switch (_type) {
-    case 2:
+    case MQ2:
       {
         //mqgases = {0,1,2,3,4,5,6};
         RL_VALUE = RL_VALUE_MQ2;
         RO_CLEAN_AIR_FACTOR = RO_CLEAN_AIR_FACTOR_MQ2;
       }
       break;
-    case 3:
+    case MQ3:
       { RL_VALUE = RL_VALUE_MQ3;
         RO_CLEAN_AIR_FACTOR = RO_CLEAN_AIR_FACTOR_MQ3;
       }
       break;
-    case 4:
+    case MQ4:
       { RL_VALUE = RL_VALUE_MQ4;
         RO_CLEAN_AIR_FACTOR = RO_CLEAN_AIR_FACTOR_MQ4;
       }
       break;
-    case 5:
+    case MQ5:
       { RL_VALUE = RL_VALUE_MQ5;
         RO_CLEAN_AIR_FACTOR = RO_CLEAN_AIR_FACTOR_MQ5;
       }
       break;
-    case 6:
+    case MQ6:
       { RL_VALUE = RL_VALUE_MQ6;
         RO_CLEAN_AIR_FACTOR = RO_CLEAN_AIR_FACTOR_MQ6;
       }
       break;
-    case 7:
+    case MQ7:
       { RL_VALUE = RL_VALUE_MQ7;
         RO_CLEAN_AIR_FACTOR = RO_CLEAN_AIR_FACTOR_MQ7;
       }
       break;
-    case 8:
+    case MQ8:
       { RL_VALUE = RL_VALUE_MQ8;
         RO_CLEAN_AIR_FACTOR = RO_CLEAN_AIR_FACTOR_MQ8;
       }
       break;
-    case 9:
+    case MQ9:
       { RL_VALUE = RL_VALUE_MQ9;
         RO_CLEAN_AIR_FACTOR = RO_CLEAN_AIR_FACTOR_MQ9;
       }
       break;
-    case 135:
+    case MQ135:
       { RL_VALUE = RL_VALUE_MQ135;
         RO_CLEAN_AIR_FACTOR = RO_CLEAN_AIR_FACTOR_MQ135;
       }
@@ -76,15 +76,15 @@ float Gassensors::MQResistanceCalculation(int raw_adc)
 /***************************** MQCalibration ****************************************
   Input:   mq_pin - analog channel
   Output:  Ro of the sensor
-  Remarks: This function assumes that the sensor is in clean air. It use
+  Remarks: This function assumes that the sensor is in clean air. It uses
          MQResistanceCalculation to calculates the sensor resistance in clean air
          and then divides it with RO_CLEAN_AIR_FACTOR. RO_CLEAN_AIR_FACTOR is about
-         10, which differs slightly between different sensors.
+         9.577 for MQ2 sensor and differs slightly between different sensors.
 ************************************************************************************/
 float Gassensors::MQCalibration(int mq_pin)
 {
-  int i, r0;
-  float RS_AIR_val = 0;
+  int i;
+  float RS_AIR_val = 0, r0;
 
   for (i = 0; i < CALIBARAION_SAMPLE_TIMES; i++) {              //take multiple samples
     RS_AIR_val += MQResistanceCalculation(analogRead(mq_pin));
@@ -93,50 +93,50 @@ float Gassensors::MQCalibration(int mq_pin)
   RS_AIR_val = RS_AIR_val / CALIBARAION_SAMPLE_TIMES;           //calculate the average value
 
   r0 = RS_AIR_val / RO_CLEAN_AIR_FACTOR;                        //RS_AIR_val divided by RO_CLEAN_AIR_FACTOR yields the Ro
-  //according to the chart in the datasheet
-  //Serial.print("r0 value");
+                                                                //according to the chart in the datasheet
+  //Serial.print(F("r0 value"));
   //Serial.println(r0);
   switch (_type) {
-    case 2:
+    case MQ2:
       //_Ro2 = r0;
       _Rovalues[0] = r0;
-      //Serial.print("r02 value:  ");
+      //Serial.print(F("r02 value:  "));
       //Serial.println(_Ro2);
       break;
-    case 3:
+    case MQ3:
       //_Ro3 = r0;
       _Rovalues[1] = r0;
       break;
-    case 4:
+    case MQ4:
       //_Ro4 = r0;
       _Rovalues[2] = r0;
-      //Serial.print("r04 value:  ");
+      //Serial.print(F("r04 value:  "));
       //Serial.println(_Ro4);
       break;
-    case 5:
+    case MQ5:
       //_Ro5 = r0;
       _Rovalues[3] = r0;
       break;
-    case 6:
+    case MQ6:
       //_Ro6 = r0;
       _Rovalues[4] = r0;
       break;
-    case 7:
+    case MQ7:
       //_Ro7 = r0;
       _Rovalues[5] = r0;
       break;
-    case 8:
+    case MQ8:
       //_Ro8 = r0;
       _Rovalues[6] = r0;
       break;
-    case 9:
+    case MQ9:
       //_Ro9 = r0;
       _Rovalues[7] = r0;
       break;
-    case 135:
+    case MQ135:
       //_Ro135 = r0;
       _Rovalues[8] = r0;
-      //Serial.print("r0135 value:  ");
+      //Serial.print(F("r0135 value:  "));
       //Serial.println(_Ro135);
       break;
   }
@@ -164,7 +164,7 @@ float Gassensors::MQRead(int mq_pin)
 
 
   rs = rs / READ_SAMPLE_TIMES;
-//Serial.print("rs value:  ");
+//Serial.print(F("rs value:  "));
 // Serial.print(rs);
   return rs;
 }
@@ -174,38 +174,45 @@ float Gassensors::MQRead(int mq_pin)
          gas_id      - target gas type
   Output:  ppm of the target gas
   Remarks: This function uses different equations representing curves of each gas to
-         calculate the ppm (parts per million) of the target gas.
+         calculate the ppm (parts per million) of the target gas(or mg/L (milligrams
+         per litre) in case of MQ3 sensor.
 ************************************************************************************/
 int Gassensors::MQGetGasPercentage(float rs_ro_ratio, int gas_id )
 {
   switch (_type) {
 
-    case 2:
-      Serial.print("calculating mq2 gases: xxxxxx     ");
-      Serial.print(gas_id);
-            Serial.print("gas_id      ");
+    case MQ2:
+     // Serial.print(F("calculating mq2 gases: xxxxxx     "));
+      //Serial.print(gas_id);
+         //   Serial.print(F("gas_id      "));
 
       if ( accuracy == 0 ) {
-        if ( gas_id == GAS_HYDROGEN ) {
-          Serial.print("calculating mq2 GAS_HYDROGEN");
+        if ( gas_id == GAS_HYDROGEN && rs_ro_ratio<=2.067 && rs_ro_ratio>=0.330) {
+          //Serial.print(F("calculating mq2 GAS_HYDROGEN"));
           return (pow(10, ((-2.109 * (log10(rs_ro_ratio))) + 2.983)));
-        } else if ( gas_id == GAS_LPG ) {
-          Serial.print("calculating mq2 GAS_LPG");
+        }
+        else if ( gas_id == GAS_LPG && rs_ro_ratio<=1.59 && rs_ro_ratio>=0.256) {
+          //Serial.print(F("calculating mq2 GAS_LPG"));
           return (pow(10, ((-2.123 * (log10(rs_ro_ratio))) + 2.758)));
-        } else if ( gas_id == GAS_METHANE ) {
-          Serial.print("calculating mq2 GAS_METHANE");
+        } 
+        else if ( gas_id == GAS_METHANE && rs_ro_ratio<=3.07 && rs_ro_ratio>=0.70) {
+          //Serial.print(F("calculating mq2 GAS_METHANE"));
           return (pow(10, ((-2.622 * (log10(rs_ro_ratio))) + 3.635)));
-        } else if ( gas_id == GAS_CARBON_MONOXIDE ) {
-          Serial.print("calculating mq2 GAS_CARBON_MONOXIDE");
+        } 
+        else if ( gas_id == GAS_CARBON_MONOXIDE && rs_ro_ratio<=5.19 && rs_ro_ratio>=1.38) {
+          //Serial.print(F("calculating mq2 GAS_CARBON_MONOXIDE"));
           return (pow(10, ((-2.955 * (log10(rs_ro_ratio))) + 4.457)));
-        } else if ( gas_id == GAS_ALCOHOL ) {
-          Serial.print("calculating mq2 GAS_ALCOHOL");
+        } 
+        else if ( gas_id == GAS_ALCOHOL && rs_ro_ratio<=2.882 && rs_ro_ratio>=0.65 ) {
+          //Serial.print(F("calculating mq2 GAS_ALCOHOL"));
           return (pow(10, ((-2.692 * (log10(rs_ro_ratio))) + 3.545)));
-        } else if ( gas_id == GAS_SMOKE ) {
-          Serial.print("calculating mq2 GAS_SMOKE");
+        } 
+        else if ( gas_id == GAS_SMOKE && rs_ro_ratio<=3.4 && rs_ro_ratio>=0.60) {
+          //Serial.print(F("calculating mq2 GAS_SMOKE"));
           return (pow(10, ((-2.331 * (log10(rs_ro_ratio))) + 3.596)));
-        } else if ( gas_id == GAS_PROPANE ) {
-          Serial.print("calculating mq2 GAS_PROPANE");
+        } 
+        else if ( gas_id == GAS_PROPANE && rs_ro_ratio<=1.7 && rs_ro_ratio>=0.27) {
+          //Serial.print(F("calculating mq2 GAS_PROPANE"));
           return (pow(10, ((-2.174 * (log10(rs_ro_ratio))) + 2.799)));
         }
       }
@@ -227,28 +234,33 @@ int Gassensors::MQGetGasPercentage(float rs_ro_ratio, int gas_id )
         }
       }
       break;
+ 
+    case MQ3:
+      //Serial.print(F("calculating mq3 gases"));
 
-    case 3:
-      Serial.print("calculating mq3 gases");
-
-      if ( accuracy == 0 ) {
-        if ( gas_id == GAS_ALCOHOL ) {
-          Serial.print("calculating mq3 GAS_ALCOHOL");
+      if ( accuracy == 0  ) {
+        if ( gas_id == GAS_ALCOHOL && rs_ro_ratio<=2.31 && rs_ro_ratio>=0.113 ) {
+          //Serial.print(F("calculating mq3 GAS_ALCOHOL"));
           return (pow(10, ((-1.487 * (log10(rs_ro_ratio))) - 0.401)));
-        } else if ( gas_id == GAS_BENZENE ) {
-          Serial.print("calculating mq3 GAS_BENZENE");
+        } 
+        else if ( gas_id == GAS_BENZENE && rs_ro_ratio<=4.05 && rs_ro_ratio>=0.782) {
+          //Serial.print(F("calculating mq3 GAS_BENZENE"));
           return (pow(10, ((-2.659 * (log10(rs_ro_ratio))) + 0.659)));
-        } else if ( gas_id == GAS_METHANE ) {
-          Serial.print("calculating mq3 GAS_METHANE");
+        }
+        else if ( gas_id == GAS_METHANE && rs_ro_ratio<=50.33 && rs_ro_ratio>=38.53 ) {
+          //Serial.print(F("calculating mq3 GAS_METHANE"));
           return (pow(10, ((-17.95 * (log10(rs_ro_ratio))) + 29.59)));
-        } else if ( gas_id == GAS_HEXANE ) {
-          Serial.print("calculating mq3 GAS_HEXANE");
+        } 
+        else if ( gas_id == GAS_HEXANE && rs_ro_ratio<=50.27 && rs_ro_ratio>=9.957) {
+         // Serial.print(F("calculating mq3 GAS_HEXANE"));
           return (pow(10, ((-2.851 * (log10(rs_ro_ratio))) + 3.889)));
-        } else if ( gas_id == GAS_LPG ) {
-          Serial.print("calculating mq3 GAS_LPG");
+        }
+        else if ( gas_id == GAS_LPG && rs_ro_ratio<=51.64 && rs_ro_ratio>=13.037) {
+          //Serial.print(F("calculating mq3 GAS_LPG"));
           return (pow(10, ((-3.386 * (log10(rs_ro_ratio))) + 4.915)));
-        } else if ( gas_id == GAS_CARBON_MONOXIDE ) {
-          Serial.print("calculating mq3 GAS_CARBON_MONOXIDE");
+        } 
+        else if ( gas_id == GAS_CARBON_MONOXIDE && rs_ro_ratio<=50.51 && rs_ro_ratio>=16.09) {
+          //Serial.print(F("calculating mq3 GAS_CARBON_MONOXIDE"));
           return (pow(10, ((-3.947 * (log10(rs_ro_ratio))) + 5.924)));
         }
       }
@@ -269,28 +281,33 @@ int Gassensors::MQGetGasPercentage(float rs_ro_ratio, int gas_id )
       }
       break;
 
-    case 4:
-      Serial.print("calculating mq4 gases");
+    case MQ4:
+      //Serial.print(F("calculating mq4 gases"));
 
       if ( accuracy == 0 ) {
-        if ( gas_id == GAS_LPG ) {
-          Serial.print("calculating mq4 gas lpg");
-          Serial.print(pow(10, ((-3.123 * (log10(rs_ro_ratio))) + 3.565)));
+        if ( gas_id == GAS_LPG && rs_ro_ratio<=2.57 && rs_ro_ratio>=0.73) {
+          //Serial.print(F("calculating mq4 gas lpg"));
+          //Serial.print(pow(10, ((-3.123 * (log10(rs_ro_ratio))) + 3.565)));
           return (pow(10, ((-3.123 * (log10(rs_ro_ratio))) + 3.565)));
-        } else if ( gas_id == GAS_METHANE ) {
-          Serial.print("calculating mq4 gas GAS_METHANE");
+        } 
+        else if ( gas_id == GAS_METHANE && rs_ro_ratio<=1.76 && rs_ro_ratio>=0.43 ) {
+          //Serial.print(F("calculating mq4 gas GAS_METHANE"));
           return (pow(10, ((-2.849 * (log10(rs_ro_ratio))) + 2.997)));
-        } else if ( gas_id == GAS_HYDROGEN ) {
-          Serial.print("calculating mq4 gas GAS_HYDROGEN");
+        } 
+        else if ( gas_id == GAS_HYDROGEN && rs_ro_ratio<=3.78 && rs_ro_ratio>=1.89 ) {
+          //Serial.print(F("calculating mq4 gas GAS_HYDROGEN"));
           return (pow(10, ((-5.661 * (log10(rs_ro_ratio))) + 5.566 )));
-        } else if ( gas_id == GAS_CARBON_MONOXIDE ) {
-          Serial.print("calculating mq4 gas GAS_CARBON_MONOXIDE");
+        } 
+        else if ( gas_id == GAS_CARBON_MONOXIDE && rs_ro_ratio<=4.27 && rs_ro_ratio>= 3.50 ) {
+          //Serial.print(F("calculating mq4 gas GAS_CARBON_MONOXIDE"));
           return (pow(10, ((-19.54 * (log10(rs_ro_ratio))) + 14.5)));
-        } else if ( gas_id == GAS_ALCOHOL ) {
-          Serial.print("calculating mq4 gas GAS_ALCOHOL");
+        } 
+        else if ( gas_id == GAS_ALCOHOL && rs_ro_ratio<=4.1 && rs_ro_ratio>=3.01) {
+          //Serial.print(F("calculating mq4 gas GAS_ALCOHOL"));
           return (pow(10, ((-13.17 * (log10(rs_ro_ratio))) + 10.35)));
-        } else if ( gas_id == GAS_SMOKE ) {
-          Serial.print("calculating mq4 gas GAS_SMOKE");
+        } 
+        else if ( gas_id == GAS_SMOKE && rs_ro_ratio<=3.96 && rs_ro_ratio>=2.54) {
+          //Serial.print(F("calculating mq4 gas GAS_SMOKE"));
           return (pow(10, ((-9.016 * (log10(rs_ro_ratio))) + 7.823)));
         }
       }
@@ -311,24 +328,25 @@ int Gassensors::MQGetGasPercentage(float rs_ro_ratio, int gas_id )
       }
       break;
 
-    case 5:
-      Serial.print("calculating mq5 gases");
+    case MQ5:
+      //Serial.print(F("calculating mq5 gases"));
 
       if ( accuracy == 0 ) {
-        if ( gas_id == GAS_HYDROGEN ) {
-          Serial.print("calculating mq5 GAS_HYDROGEN");
+        if ( gas_id == GAS_HYDROGEN && rs_ro_ratio<=1.74 && rs_ro_ratio>=0.65 ) {
+          //Serial.print(F("calculating mq5 GAS_HYDROGEN"));
           return (pow(10, ((-3.986 * (log10(rs_ro_ratio))) + 3.075)));
-        } else if ( gas_id == GAS_LPG ) {
-          Serial.print("calculating mq5 GAS_LPG");
+        } 
+        else if ( gas_id == GAS_LPG && rs_ro_ratio<=0.71 && rs_ro_ratio>=0.14) {
+          //Serial.print(F("calculating mq5 GAS_LPG"));
           return (pow(10, ((-2.513 * (log10(rs_ro_ratio))) + 1.878)));
-        } else if ( gas_id == GAS_METHANE ) {
-          Serial.print("calculating mq5 GAS_METHANE");
+        } else if ( gas_id == GAS_METHANE && rs_ro_ratio<=0.96 && rs_ro_ratio>=0.20) {
+          //Serial.print(F("calculating mq5 GAS_METHANE"));
           return (pow(10, ((-2.554 * (log10(rs_ro_ratio))) + 2.265 )));
-        } else if ( gas_id == GAS_CARBON_MONOXIDE ) {
-          Serial.print("calculating mq5 GAS_CARBON_MONOXIDE");
+        } else if ( gas_id == GAS_CARBON_MONOXIDE && rs_ro_ratio<=3.9 && rs_ro_ratio>=2.24 ) {
+          //Serial.print(F("calculating mq5 GAS_CARBON_MONOXIDE"));
           return (pow(10, ((-6.900 * (log10(rs_ro_ratio))) + 6.241)));
-        } else if ( gas_id == GAS_ALCOHOL ) {
-          Serial.print("calculating mq5 GAS_ALCOHOL");
+        } else if ( gas_id == GAS_ALCOHOL && rs_ro_ratio<=3.5 && rs_ro_ratio>=1.43) {
+          //Serial.print(F("calculating mq5 GAS_ALCOHOL"));
           return (pow(10, ((-4.590 * (log10(rs_ro_ratio))) + 4.851)));
         }
       }
@@ -347,24 +365,24 @@ int Gassensors::MQGetGasPercentage(float rs_ro_ratio, int gas_id )
       }
       break;
 
-    case 6:
-      Serial.print("calculating mq6 gases");
+    case MQ6:
+      //Serial.print(F("calculating mq6 gases"));
 
       if ( accuracy == 0 ) {
-        if ( gas_id == GAS_LPG ) {
-          Serial.print("calculating mq6 GAS_LPG");
+        if ( gas_id == GAS_LPG && rs_ro_ratio<=2.05 && rs_ro_ratio>=0.39) {
+          //Serial.print(F("calculating mq6 GAS_LPG"));
           return (pow(10, ((-2.351 * (log10(rs_ro_ratio))) + 3.014)));
-        } else if ( gas_id == GAS_HYDROGEN ) {
-          Serial.print("calculating mq6 GAS_HYDROGEN");
+        } else if ( gas_id == GAS_HYDROGEN && rs_ro_ratio<=5.75 && rs_ro_ratio>=2.04) {
+          //Serial.print(F("calculating mq6 GAS_HYDROGEN"));
           return (pow(10, ((-3.613 * (log10(rs_ro_ratio))) + 4.962)));
-        } else if ( gas_id == GAS_METHANE ) {
-          Serial.print("calculating mq6 GAS_METHANE");
+        } else if ( gas_id == GAS_METHANE && rs_ro_ratio<=2.58 && rs_ro_ratio>=0.53) {
+          //Serial.print(F("calculating mq6 GAS_METHANE"));
           return (pow(10, ((-2.501 * (log10(rs_ro_ratio))) + 3.341 )));
-        } else if ( gas_id == GAS_CARBON_MONOXIDE ) {
-          Serial.print("calculating mq6 GAS_CARBON_MONOXIDE");
+        } else if ( gas_id == GAS_CARBON_MONOXIDE && rs_ro_ratio<=8.89 && rs_ro_ratio>=6.38 ) {
+          //Serial.print(F("calculating mq6 GAS_CARBON_MONOXIDE"));
           return (pow(10, ((-12.51 * (log10(rs_ro_ratio))) + 14.21)));
-        } else if ( gas_id == GAS_ALCOHOL ) {
-          Serial.print("calculating mq6 GAS_ALCOHOL");
+        } else if ( gas_id == GAS_ALCOHOL && rs_ro_ratio<=8.02 && rs_ro_ratio>=4.23) {
+          //Serial.print(F("calculating mq6 GAS_ALCOHOL"));
           return (pow(10, ((-5.885 * (log10(rs_ro_ratio))) + 7.643)));
         }
       }
@@ -383,24 +401,24 @@ int Gassensors::MQGetGasPercentage(float rs_ro_ratio, int gas_id )
       }
       break;
 
-    case 7:
-      Serial.print("calculating mq7 gases");
+    case MQ7:
+      //Serial.print(F("calculating mq7 gases"));
 
       if ( accuracy == 0 ) {
-        if ( gas_id == GAS_CARBON_MONOXIDE ) {
-          Serial.print("calculating mq7 GAS_CARBON_MONOXIDE");
+        if ( gas_id == GAS_CARBON_MONOXIDE && rs_ro_ratio<= 1.59 && rs_ro_ratio>= 0.09) {
+          //Serial.print(F("calculating mq7 GAS_CARBON_MONOXIDE"));
           return (pow(10, ((-1.525 * (log10(rs_ro_ratio))) + 1.994)));
-        } else if ( gas_id == GAS_HYDROGEN ) {
-          Serial.print("calculating mq7 GAS_HYDROGEN");
+        } else if ( gas_id == GAS_HYDROGEN && rs_ro_ratio<=1.29 && rs_ro_ratio>=0.05) {
+          //Serial.print(F("calculating mq7 GAS_HYDROGEN"));
           return (pow(10, ((-1.355 * (log10(rs_ro_ratio))) + 1.847)));
-        } else if ( gas_id == GAS_LPG ) {
-          Serial.print("calculating mq7 GAS_LPG");
+        } else if ( gas_id == GAS_LPG && rs_ro_ratio<=8.99 && rs_ro_ratio>=4.9) {
+          //Serial.print(F("calculating mq7 GAS_LPG"));
           return (pow(10, ((-7.622 * (log10(rs_ro_ratio))) + 8.919 )));
-        } else if ( gas_id == GAS_METHANE ) {
-          Serial.print("calculating mq7 GAS_METHANE");
+        } else if ( gas_id == GAS_METHANE && rs_ro_ratio<=14.15 && rs_ro_ratio>=8.94) {
+          //Serial.print(F("calculating mq7 GAS_METHANE"));
           return (pow(10, ((-11.01 * (log10(rs_ro_ratio))) + 14.32)));
-        } else if ( gas_id == GAS_ALCOHOL ) {
-          Serial.print("calculating mq7 GAS_ALCOHOL");
+        } else if ( gas_id == GAS_ALCOHOL && rs_ro_ratio<=16.32 && rs_ro_ratio>=11.98) {
+          //Serial.print(F("calculating mq7 GAS_ALCOHOL"));
           return (pow(10, ((-14.72 * (log10(rs_ro_ratio))) + 19.31)));
         }
       }
@@ -419,21 +437,21 @@ int Gassensors::MQGetGasPercentage(float rs_ro_ratio, int gas_id )
       }
       break;
 
-    case 8:
-     Serial.print("calculating mq8 gases");
+    case MQ8:
+     //Serial.print(F("calculating mq8 gases"));
 
       if ( accuracy == 0 ) {
-        if ( gas_id == GAS_HYDROGEN ) {
-          Serial.print("calculating mq8 GAS_HYDROGEN");
+        if ( gas_id == GAS_HYDROGEN && rs_ro_ratio<=0.25 && rs_ro_ratio>=0.04) {
+          //Serial.print(F("calculating mq8 GAS_HYDROGEN"));
           return (pow(10, ((-2.568 * (log10(rs_ro_ratio))) + 0.360)));
-        } else if ( gas_id == GAS_ALCOHOL ) {
-          Serial.print("calculating mq8 GAS_ALCOHOL");
+        } else if ( gas_id == GAS_ALCOHOL && rs_ro_ratio<=0.912 && rs_ro_ratio>=0.71) {
+          //Serial.print(F("calculating mq8 GAS_ALCOHOL"));
           return (pow(10, ((-14.45 * (log10(rs_ro_ratio))) + 2.001)));
-        } else if ( gas_id == GAS_CARBON_MONOXIDE ) {
-          Serial.print("calculating mq8 GAS_CARBON_MONOXIDE");
+        } else if ( gas_id == GAS_CARBON_MONOXIDE && rs_ro_ratio<=0.942 && rs_ro_ratio>=0.902) {
+          //Serial.print(F("calculating mq8 GAS_CARBON_MONOXIDE"));
           return (pow(10, ((-32.24 * (log10(rs_ro_ratio))) + 1.126 )));
-        } else if ( gas_id == GAS_METHANE ) {
-          Serial.print("calculating mq8 GAS_METHANE");
+        } else if ( gas_id == GAS_METHANE && rs_ro_ratio<=0.90 && rs_ro_ratio>=0.67) {
+          //Serial.print(F("calculating mq8 GAS_METHANE"));
           return (pow(10, ((-16.16 * (log10(rs_ro_ratio))) + 1.093)));
         }
       }
@@ -450,18 +468,18 @@ int Gassensors::MQGetGasPercentage(float rs_ro_ratio, int gas_id )
       }
       break;
 
-    case 9:
-      Serial.print("calculating mq9 gases");
+    case MQ9:
+      //Serial.print(F("calculating mq9 gases"));
 
       if ( accuracy == 0 ) {
-        if ( gas_id == GAS_LPG ) {
-          Serial.print("calculating mq9 GAS_LPG");
+        if ( gas_id == GAS_LPG && rs_ro_ratio<=2.06 && rs_ro_ratio>=0.33) {
+          //Serial.print(F("calculating mq9 GAS_LPG"));
           return (pow(10, ((-2.132 * (log10(rs_ro_ratio))) + 2.992)));
-        } else if ( gas_id == GAS_CARBON_MONOXIDE ) {
-          Serial.print("calculating mq9 GAS_CARBON_MONOXIDE");
+        } else if ( gas_id == GAS_CARBON_MONOXIDE && rs_ro_ratio<=1.64 && rs_ro_ratio>=0.78) {
+          //Serial.print(F("calculating mq9 GAS_CARBON_MONOXIDE"));
           return (pow(10, ((-2.199 * (log10(rs_ro_ratio))) + 2.766 )));
-        } else if ( gas_id == GAS_METHANE ) {
-          Serial.print("calculating mq9 GAS_METHANE");
+        } else if ( gas_id == GAS_METHANE && rs_ro_ratio<=3.12 && rs_ro_ratio>=0.70) {
+          //Serial.print(F("calculating mq9 GAS_METHANE"));
           return (pow(10, ((-2.636 * (log10(rs_ro_ratio))) + 3.646)));
         }
       }
@@ -476,18 +494,18 @@ int Gassensors::MQGetGasPercentage(float rs_ro_ratio, int gas_id )
       }
       break;
 
-    case 135:
-      Serial.print("calculating mq135 gases: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx     ");
-     Serial.print(rs_ro_ratio);
-    //  Serial.print(gas_id);
-        //          Serial.print("gas_id      ");
+    case MQ135:
+      //Serial.print(F("calculating mq135 gases: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx     "));
+     //Serial.print(rs_ro_ratio);
+    //  //Serial.print(gas_id);
+        //          //Serial.print("gas_id      ");
 
       if ( accuracy == 0 ) {
-        if ( gas_id == GAS_CARBON_DIOXIDE ) {
-                Serial.println("calculating mq135 co2 gases");
+        if ( gas_id == GAS_CARBON_DIOXIDE && rs_ro_ratio<=2.3 && rs_ro_ratio>=0.8) {
+                //Serial.println(F("calculating mq135 co2 gases"));
 
           return (pow(10, ((-2.890 * (log10(rs_ro_ratio))) + 2.055)));
-        } else if ( gas_id == GAS_CARBON_MONOXIDE ) {
+        } else if ( gas_id == GAS_CARBON_MONOXIDE && rs_ro_ratio<=2.85 && rs_ro_ratio>=1.34) {
                /*Serial.println("calculating mq135 co gases"); 
                Serial.print("rs_ro_ratio:  ");                                                        //debug statements that display step by step calculation of ppm
                Serial.println(rs_ro_ratio);
@@ -500,20 +518,20 @@ int Gassensors::MQGetGasPercentage(float rs_ro_ratio, int gas_id )
                Serial.print("2.75+pow of 10, 3.891* log of rs_ro_ratio: ");
                Serial.println((pow(10, ((-3.891 * (log10(rs_ro_ratio))) + 2.750))));*/
           return (pow(10, ((-3.891 * (log10(rs_ro_ratio))) + 2.750)));
-        } else if ( gas_id == GAS_3by4AE ) {
-                Serial.println("calculating mq135 3by4ae gases");
+        } else if ( gas_id == GAS_ALCOHOL && rs_ro_ratio<=1.894 && rs_ro_ratio>=0.737) {
+                //Serial.println(F("calculating mq135 ALCOHOL gases"));
 
           return (pow(10, ((-3.181 * (log10(rs_ro_ratio))) + 1.895)));
-        } else if ( gas_id == GAS_AMMONIUM ) {
-                Serial.println("calculating mq135 ammonium gases");
+        } else if ( gas_id == GAS_AMMONIUM && rs_ro_ratio<=2.545 && rs_ro_ratio>=0.754) {
+                //Serial.println(F("calculating mq135 ammonium gases"));
 
           return (pow(10, ((-2.469 * (log10(rs_ro_ratio))) + 2.005)));
-        } else if (gas_id == GAS_1by4 ) {
-                Serial.println("calculating mq135 1by4 gases");
+        } else if (gas_id == GAS_TOLUENE && rs_ro_ratio<=1.543 && rs_ro_ratio>=0.646) {
+                //Serial.println(F("calculating mq135 TOLUENE gases"));
 
           return (pow(10, ((-3.479 * (log10(rs_ro_ratio))) + 1.658)));
-        } else if ( gas_id == GAS_NAME ) {
-                Serial.println("calculating mq135 name gases");
+        } else if ( gas_id == GAS_ACETONE && rs_ro_ratio<=1.421 && rs_ro_ratio>=0.587) {
+                //Serial.println(F("calculating mq135 ACETONE gases"));
 
           return (pow(10, ((-3.452 * (log10(rs_ro_ratio))) + 1.542)));
         }
@@ -523,13 +541,13 @@ int Gassensors::MQGetGasPercentage(float rs_ro_ratio, int gas_id )
           return (pow(10, ((-2.890 * (log10(rs_ro_ratio))) + 2.055)));
         } else if ( gas_id == GAS_CARBON_MONOXIDE ) {
           return (pow(10, (1.457 * pow((log10(rs_ro_ratio)), 2) - 4.725 * (log10(rs_ro_ratio)) + 2.855)));
-        } else if ( gas_id == GAS_3by4AE ) {
+        } else if ( gas_id == GAS_ALCOHOL ) {
           return (pow(10, ((-3.181 * (log10(rs_ro_ratio))) + 1.895)));
         } else if (gas_id == GAS_AMMONIUM ) {
           return (pow(10, ((-2.469 * (log10(rs_ro_ratio))) + 2.005)));
-        } else if ( gas_id == GAS_1by4 ) {
+        } else if ( gas_id == GAS_TOLUENE ) {
           return (pow(10, ((-3.479 * (log10(rs_ro_ratio))) + 1.658)));
-        } else if ( gas_id == GAS_NAME ) {
+        } else if ( gas_id == GAS_ACETONE ) {
           return (pow(10, (-1.004 * pow((log10(rs_ro_ratio)), 2) - 3.525 * (log10(rs_ro_ratio)) + 1.553)));
         }
       }
@@ -542,7 +560,7 @@ float Gassensors::rs_ro_ratio(uint8_t pin)
 {
   switch (_type) {
 
-    case 2:
+    case MQ2:
       /*{Serial.print("   rs2 value now: ");
       float x = MQRead(pin);
       Serial.print(x);
@@ -555,11 +573,11 @@ float Gassensors::rs_ro_ratio(uint8_t pin)
       return MQRead(pin) / _Rovalues[0];
       break;
 
-    case 3:
+    case MQ3:
       return MQRead(pin) / _Rovalues[1];
       break;
 
-    case 4:
+    case MQ4:
       /*{
       Serial.print("rs_ro4_ratio now");
       float x = MQRead(pin)/_Ro4;
@@ -567,34 +585,34 @@ float Gassensors::rs_ro_ratio(uint8_t pin)
       return MQRead(pin) / _Rovalues[2];
       break;
 
-    case 5:
+    case MQ5:
       return MQRead(pin) / _Rovalues[3];
       break;
 
-    case 6:
+    case MQ6:
       return MQRead(pin) / _Rovalues[4];
       break;
 
-    case 7:
+    case MQ7:
       return MQRead(pin) / _Rovalues[5];
       break;
 
-    case 8:
+    case MQ8:
       return MQRead(pin) / _Rovalues[6];
       break;
 
-    case 9:
+    case MQ9:
       return MQRead(pin) / _Rovalues[7];
       break;
 
-    case 135:
-          Serial.print("rs_ro135_ratio");
-      Serial.print(MQRead(pin) / _Rovalues[8]);
+    case MQ135:
+          //Serial.print(F("rs_ro135_ratio"));
+      //Serial.print(MQRead(pin) / _Rovalues[8]);
       return MQRead(pin)/_Rovalues[8];
       break;
 
     default:
-      Serial.print("rs_ro default case executed");
+      Serial.print(F("rs_ro default case executed"));
 
   }
 }
@@ -607,67 +625,67 @@ float Gassensors::rs_ro_ratio(uint8_t pin)
   {
     switch (_type) {
 
-        case 2:
+        case MQ2:
         {int mq2gases[]={0,1,2,3,4,5,6};
-        Serial.print("HYDROGEN:");
+        Serial.print(F("HYDROGEN:"));
         Serial.print(gasppm(_pin, _type, mq2gases[0]));
-        Serial.print( "ppm" );
-        Serial.print("    ");
-        Serial.print("LPG:");
+        Serial.print( F("ppm") );
+        Serial.print(F("    "));
+        Serial.print(F("LPG:"));
         Serial.print(gasppm(_pin, _type, mq2gases[1]));
-        Serial.print( "ppm" );
-        Serial.print("    ");
-        Serial.print("METHANE:");
+        Serial.print( F("ppm") );
+        Serial.print(F("    "));
+        Serial.print(F("METHANE:"));
         Serial.print(gasppm(_pin, _type, mq2gases[2]));
-        Serial.print( "ppm" );
-        Serial.print("    ");
-        Serial.print("CARBON_MONOXIDE:");
+        Serial.print( F("ppm") );
+        Serial.print(F("    "));
+        Serial.print(F("CARBON_MONOXIDE:"));
         Serial.print(gasppm(_pin, _type, mq2gases[3]));
-        Serial.print( "ppm" );
-        Serial.print("    ");
-        Serial.print("ALCOHOL:");
+        Serial.print( F("ppm") );
+        Serial.print(F("    "));
+        Serial.print(F("ALCOHOL:"));
         Serial.print(gasppm(_pin, _type, mq2gases[4]));
-        Serial.print( "ppm" );
-        Serial.print("    ");
-        Serial.print("SMOKE:");
+        Serial.print( F("ppm") );
+        Serial.print(F("    "));
+        Serial.print(F("SMOKE:"));
         Serial.print(gasppm(_pin, _type, mq2gases[5]));
-        Serial.print( "ppm" );
-        Serial.print("    ");
-        Serial.print("PROPANE:");
+        Serial.print( F("ppm") );
+        Serial.print(F("    "));
+        Serial.print(F("PROPANE:"));
         Serial.print(gasppm(_pin, _type, mq2gases[6]));
-        Serial.print( "ppm" );
+        Serial.print( F("ppm") );
         Serial.print("\n");}
         break;
 
-     /* case 3:
+        case MQ3:
         {int mq3gases[] = {4,7,2,8,1,3};
         Serial.print("ALCOHOL:");
         Serial.print(gasppm(_pin, _type, mq3gases[0]));
-        Serial.print( "ppm" );
+        Serial.print( "mg/L" );
         Serial.print("    ");
         Serial.print("BENZENE:");
         Serial.print(gasppm(_pin, _type, mq3gases[1]));
-        Serial.print( "ppm" );
+        Serial.print( "mg/L" );
         Serial.print("    ");
         Serial.print("METHANE:");
         Serial.print(gasppm(_pin, _type, mq3gases[2]));
-        Serial.print( "ppm" );
+        Serial.print( "mg/L" );
         Serial.print("    ");
         Serial.print("HEXANE:");
         Serial.print(gasppm(_pin, _type, mq3gases[3]));
-        Serial.print( "ppm" );
+        Serial.print( "mg/L" );
         Serial.print("    ");
         Serial.print("LPG:");
         Serial.print(gasppm(_pin, _type, mq3gases[4]));
-        Serial.print( "ppm" );
+        Serial.print( "mg/L" );
         Serial.print("    ");
         Serial.print("CARBON_MONOXIDE:");
         Serial.print(gasppm(_pin, _type, mq3gases[5]));
-        Serial.print( "ppm" );
+        Serial.print( "mg/L" );
         Serial.print("\n");}
         break;
 
-      case 4:
+      case MQ4:
         {int mq4gases[] = {1,2,0,3,4,5};
         Serial.print("LPG:");
         Serial.print(gasppm(_pin, _type, mq4gases[0]));
@@ -695,7 +713,7 @@ float Gassensors::rs_ro_ratio(uint8_t pin)
         Serial.print("\n");}
         break;
 
-      case 5:
+        case MQ5:
         {int mq5gases[] = {0,1,2,3,4};
         Serial.print("HYDROGEN:");
         Serial.print(gasppm(_pin, _type, mq5gases[0]));
@@ -719,7 +737,7 @@ float Gassensors::rs_ro_ratio(uint8_t pin)
         Serial.print("\n");}
         break;
 
-      case 6:
+      case MQ6:
         {int mq6gases[] = {1,0,2,3,4};
         Serial.print("LPG:");
         Serial.print(gasppm(_pin, _type, mq6gases[0]));
@@ -743,7 +761,7 @@ float Gassensors::rs_ro_ratio(uint8_t pin)
         Serial.print("\n");}
         break;
 
-      case 7:
+      case MQ7:
         {int mq7gases[] = {3,0,1,2,4};
         Serial.print("CARBON_MONOXIDE:");
         Serial.print(gasppm(_pin, _type, mq7gases[0]));
@@ -767,7 +785,7 @@ float Gassensors::rs_ro_ratio(uint8_t pin)
         Serial.print("\n");}
         break;
 
-      case 8:
+      case MQ8:
         {int mq8gases[] = {0,4,3,2};
         Serial.print("HYDROGEN:");
         Serial.print(gasppm(_pin, _type, mq8gases[0]));
@@ -787,7 +805,7 @@ float Gassensors::rs_ro_ratio(uint8_t pin)
         Serial.print("\n");}
         break;
 
-      case 9:
+      case MQ9:
         {int mq9gases[] = {1,3,2};
         Serial.print("LPG:");
         Serial.print(gasppm(_pin, _type, mq9gases[0]));
@@ -803,8 +821,8 @@ float Gassensors::rs_ro_ratio(uint8_t pin)
         Serial.print("\n");}
         break;
 
-      case 135:
-        {int mq135gases[] = {9,3,10,11,12,13};
+      case MQ135:
+        {int mq135gases[] = {9,3,4,10,11,12};
         Serial.print("CARBON_DIOXIDE:");
         Serial.print(gasppm(_pin, _type, mq135gases[0]));
         Serial.print( "ppm" );
@@ -813,7 +831,7 @@ float Gassensors::rs_ro_ratio(uint8_t pin)
         Serial.print(gasppm(_pin, _type, mq135gases[1]));
         Serial.print( "ppm" );
         Serial.print("    ");
-        Serial.print("3/4AE:");
+        Serial.print("ALCOHOL:");
         Serial.print(gasppm(_pin, _type, mq135gases[2]));
         Serial.print( "ppm" );
         Serial.print("    ");
@@ -821,15 +839,15 @@ float Gassensors::rs_ro_ratio(uint8_t pin)
         Serial.print(gasppm(_pin, _type, mq135gases[3]));
         Serial.print( "ppm" );
         Serial.print("    ");
-        Serial.print("1/4:");
+        Serial.print("TOLUENE:");
         Serial.print(gasppm(_pin, _type, mq135gases[4]));
         Serial.print( "ppm" );
         Serial.print("    ");
-        Serial.print("NAME:");
+        Serial.print("ACETONE:");
         Serial.print(gasppm(_pin, _type, mq135gases[5]));
         Serial.print( "ppm" );
         Serial.print("\n");}
-        break;*/
+        break;
     }
   }
 
