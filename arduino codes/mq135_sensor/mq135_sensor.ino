@@ -1,9 +1,9 @@
 /************************MQ135sensor************************************/
 /************************Hardware Related Macros************************************/
-#define         MQ135PIN                       (0)     //define which analog input channel you are going to use
-#define         RL_VALUE_MQ135                 (20)    //define the load resistance on the board, in kilo ohms
-#define         RO_CLEAN_AIR_FACTOR_MQ135      (9.83)  //RO_CLEAR_AIR_FACTOR=(Sensor resistance in clean air)/RO,
-                                                     //which is derived from the chart in datasheet
+#define         MQ135PIN                       (5)     //define which analog input channel you are going to use
+#define         RL_VALUE_MQ135                 (1)     //define the load resistance on the board, in kilo ohms
+#define         RO_CLEAN_AIR_FACTOR_MQ135      (3.59)  //RO_CLEAR_AIR_FACTOR=(Sensor resistance in clean air)/RO,
+                                                       //which is derived from the chart in datasheet
 
 /***********************Software Related Macros************************************/
 #define         CALIBARAION_SAMPLE_TIMES     (50)    //define how many samples you are going to take in the calibration phase
@@ -16,12 +16,12 @@
 /**********************Application Related Macros**********************************/
 #define         GAS_CARBON_DIOXIDE           (9)
 #define         GAS_CARBON_MONOXIDE          (3)
-#define         GAS_3/4AE                    (10)
-#define         GAS_AMMONIUM                 (11)
-#define         GAS_1/4                      (12)
-#define         GAS_NAME                     (13)
-#define         accuracy                     (0)   //for linearcurves
-//#define         accuracy                   (1)   //for nonlinearcurves, un comment this line and comment the above line if calculations 
+#define         GAS_ALCOHOL                  (4)
+#define         GAS_AMMONIUM                 (10)
+#define         GAS_TOLUENE                  (11)
+#define         GAS_ACETONE                  (12)
+//#define         accuracy                     (0)   //for linearcurves
+#define         accuracy                   (1)   //for nonlinearcurves, un comment this line and comment the above line if calculations 
                                                    //are to be done using non linear curve equations
 /*****************************Globals***********************************************/
 float           Ro = 10;                            //Ro is initialized to 10 kilo ohms
@@ -49,20 +49,20 @@ void loop() {
    Serial.print(MQGetGasPercentage(MQRead(MQ135PIN)/Ro,GAS_CARBON_MONOXIDE) );
    Serial.print( "ppm" );
    Serial.print("    ");   
-   Serial.print("3/4AE:"); 
-   Serial.print(MQGetGasPercentage(MQRead(MQ135PIN)/Ro,GAS_3/4AE) );
+   Serial.print("ALCOHOL:"); 
+   Serial.print(MQGetGasPercentage(MQRead(MQ135PIN)/Ro,GAS_ALCOHOL) );
    Serial.print( "ppm" );
    Serial.print("    ");   
    Serial.print("AMMONIUM:"); 
    Serial.print(MQGetGasPercentage(MQRead(MQ135PIN)/Ro,GAS_AMMONIUM) );
    Serial.print( "ppm" );
    Serial.print("    ");   
-   Serial.print("1/4:"); 
-   Serial.print(MQGetGasPercentage(MQRead(MQ135PIN)/Ro,GAS_1/4) );
+   Serial.print("TOLUENE:"); 
+   Serial.print(MQGetGasPercentage(MQRead(MQ135PIN)/Ro,GAS_TOLUENE) );
    Serial.print( "ppm" );
    Serial.print("    ");   
-   Serial.print("NAME:"); 
-   Serial.print(MQGetGasPercentage(MQRead(MQ135PIN)/Ro,GAS_NAME) );
+   Serial.print("ACETONE:"); 
+   Serial.print(MQGetGasPercentage(MQRead(MQ135PIN)/Ro,GAS_ACETONE) );
    Serial.print( "ppm" );
    Serial.print("\n");
    delay(200);
@@ -90,8 +90,8 @@ Remarks: This function assumes that the sensor is in clean air. It use
 ************************************************************************************/ 
 float MQCalibration(int mq_pin)
 {
-  int i,r0;
-  float RS_AIR_val=0;
+  int i;
+  float RS_AIR_val=0,r0;
 
   for (i=0;i<CALIBARAION_SAMPLE_TIMES;i++) {                     //take multiple samples
     RS_AIR_val += MQResistanceCalculation(analogRead(mq_pin));
@@ -142,13 +142,13 @@ int MQGetGasPercentage(float rs_ro_ratio, int gas_id)
     return (pow(10,((-2.890*(log10(rs_ro_ratio))) + 2.055)));
   } else if ( gas_id == GAS_CARBON_MONOXIDE ) {
     return (pow(10,((-3.891*(log10(rs_ro_ratio))) + 2.750)));
-  } else if ( gas_id == GAS_3/4AE ) {
+  } else if ( gas_id == GAS_ALCOHOL ) {
     return (pow(10,((-3.181*(log10(rs_ro_ratio))) + 1.895)));
   } else if ( gas_id == GAS_AMMONIUM ) {
     return (pow(10,((-2.469*(log10(rs_ro_ratio))) + 2.005)));
-  } else if ( gas_id == GAS_1/4 ) {
+  } else if ( gas_id == GAS_TOLUENE ) {
     return (pow(10,((-3.479*(log10(rs_ro_ratio))) + 1.658)));
-  } else if ( gas_id == GAS_NAME ) {
+  } else if ( gas_id == GAS_ACETONE ) {
     return (pow(10,((-3.452*(log10(rs_ro_ratio))) + 1.542)));
   }   
 } 
@@ -158,13 +158,13 @@ int MQGetGasPercentage(float rs_ro_ratio, int gas_id)
     return (pow(10,((-2.890*(log10(rs_ro_ratio))) + 2.055)));
   } else if ( gas_id == GAS_CARBON_MONOXIDE ) {
     return (pow(10,(1.457*pow((log10(rs_ro_ratio)), 2) - 4.725*(log10(rs_ro_ratio)) + 2.855)));
-  } else if ( gas_id == GAS_3/4AE ) {
+  } else if ( gas_id == GAS_ALCOHOL ) {
     return (pow(10,((-3.181*(log10(rs_ro_ratio))) + 1.895)));
   } else if ( gas_id == GAS_AMMONIUM ) {
     return (pow(10,((-2.469*(log10(rs_ro_ratio))) + 2.005)));
-  } else if ( gas_id == GAS_1/4 ) {
+  } else if ( gas_id == GAS_TOLUENE ) {
     return (pow(10,((-3.479*(log10(rs_ro_ratio))) + 1.658)));
-  } else if ( gas_id == GAS_NAME ) {
+  } else if ( gas_id == GAS_ACETONE ) {
     return (pow(10,(-1.004*pow((log10(rs_ro_ratio)), 2) - 3.525*(log10(rs_ro_ratio)) + 1.553)));
   }
 }    

@@ -1,9 +1,9 @@
 /************************MQ5sensor************************************/
 /************************Hardware Related Macros************************************/
-#define         MQ5PIN                       (0)     //define which analog input channel you are going to use
-#define         RL_VALUE_MQ5                 (20)    //define the load resistance on the board, in kilo ohms
-#define         RO_CLEAN_AIR_FACTOR_MQ5      (9.83)  //RO_CLEAR_AIR_FACTOR=(Sensor resistance in clean air)/RO,
-                                                     //which is derived from the chart in datasheet
+#define         MQ5PIN                       (0)      //define which analog input channel you are going to use
+#define         RL_VALUE_MQ5                 (1)      //define the load resistance on the board, in kilo ohms
+#define         RO_CLEAN_AIR_FACTOR_MQ5      (6.455)  //RO_CLEAR_AIR_FACTOR=(Sensor resistance in clean air)/RO,
+                                                      //which is derived from the chart in datasheet
 
 /***********************Software Related Macros************************************/
 #define         CALIBARAION_SAMPLE_TIMES     (50)    //define how many samples you are going to take in the calibration phase
@@ -85,8 +85,8 @@ Remarks: This function assumes that the sensor is in clean air. It use
 ************************************************************************************/ 
 float MQCalibration(int mq_pin)
 {
-  int i,r0;
-  float RS_AIR_val=0;
+  int i;
+  float RS_AIR_val=0,r0;
 
   for (i=0;i<CALIBARAION_SAMPLE_TIMES;i++) {                     //take multiple samples
     RS_AIR_val += MQResistanceCalculation(analogRead(mq_pin));

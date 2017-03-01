@@ -1,9 +1,9 @@
 /************************MQ3sensor************************************/
 /************************Hardware Related Macros************************************/
-#define         MQ3PIN                       (0)     //define which analog input channel you are going to use
-#define         RL_VALUE_MQ3                 (200)   //define the load resistance on the board, in kilo ohms
-#define         RO_CLEAN_AIR_FACTOR_MQ3      (9.83)  //RO_CLEAR_AIR_FACTOR=(Sensor resistance in clean air)/RO,
-                                                     //which is derived from the chart in datasheet
+#define         MQ3PIN                       (0)      //define which analog input channel you are going to use
+#define         RL_VALUE_MQ3                 (1)      //define the load resistance on the board, in kilo ohms
+#define         RO_CLEAN_AIR_FACTOR_MQ3      (60.314) //RO_CLEAR_AIR_FACTOR=(Sensor resistance in clean air)/RO,
+                                                      //which is derived from the chart in datasheet
 
 /***********************Software Related Macros************************************/
 #define         CALIBARAION_SAMPLE_TIMES     (50)    //define how many samples you are going to take in the calibration phase
@@ -22,7 +22,7 @@
 #define         GAS_CARBON_MONOXIDE          (3)
 #define         accuracy                     (0)   //for linearcurves
 //#define         accuracy                   (1)   //for nonlinearcurves, un comment this line and comment the above line if calculations 
-                                                    //are to be done using non linear curve equations
+                                                   //are to be done using non linear curve equations
 /*****************************Globals***********************************************/
 float           Ro = 10;                            //Ro is initialized to 10 kilo ohms
 
@@ -43,27 +43,27 @@ void loop() {
 
    Serial.print("ALCOHOL:"); 
    Serial.print(MQGetGasPercentage(MQRead(MQ3PIN)/Ro,GAS_ALCOHOL) );
-   Serial.print( "ppm" );
+   Serial.print( "mg/L" );
    Serial.print("    ");   
    Serial.print("BENZENE:"); 
    Serial.print(MQGetGasPercentage(MQRead(MQ3PIN)/Ro,GAS_BENZENE) );
-   Serial.print( "ppm" );
+   Serial.print( "mg/L" );
    Serial.print("    ");   
    Serial.print("METHANE:"); 
    Serial.print(MQGetGasPercentage(MQRead(MQ3PIN)/Ro,GAS_METHANE) );
-   Serial.print( "ppm" );
+   Serial.print( "mg/L" );
    Serial.print("    ");   
    Serial.print("HEXANE:"); 
    Serial.print(MQGetGasPercentage(MQRead(MQ3PIN)/Ro,GAS_HEXANE) );
-   Serial.print( "ppm" );
+   Serial.print( "mg/L" );
    Serial.print("    ");   
    Serial.print("LPG:"); 
    Serial.print(MQGetGasPercentage(MQRead(MQ3PIN)/Ro,GAS_LPG) );
-   Serial.print( "ppm" );
+   Serial.print( "mg/L" );
    Serial.print("    ");   
    Serial.print("CARBON_MONOXIDE:"); 
    Serial.print(MQGetGasPercentage(MQRead(MQ3PIN)/Ro,GAS_CARBON_MONOXIDE) );
-   Serial.print( "ppm" );
+   Serial.print( "mg/L" );
    Serial.print("\n");
    delay(200);
 }
@@ -90,18 +90,24 @@ Remarks: This function assumes that the sensor is in clean air. It use
 ************************************************************************************/ 
 float MQCalibration(int mq_pin)
 {
-  int i,r0;
-  float RS_AIR_val=0;
+  int i;
+  float RS_AIR_val=0,r0;
 
   for (i=0;i<CALIBARAION_SAMPLE_TIMES;i++) {                     //take multiple samples
-    RS_AIR_val += MQResistanceCalculation(analogRead(mq_pin));
+    RS_AIR_val += MQResistanceCalculation(analogRead(mq_pin)); //Serial.println("RS_AIR_val:"); 
+   //Serial.println(RS_AIR_val );
     delay(CALIBRATION_SAMPLE_INTERVAL);
   }
   RS_AIR_val = RS_AIR_val/CALIBARAION_SAMPLE_TIMES;              //calculate the average value
-
+ /*Serial.println("RS_AIR_val:"); 
+   Serial.println(RS_AIR_val );
+    Serial.println(RO_CLEAN_AIR_FACTOR_MQ3 );
+    Serial.println(RS_AIR_val/RO_CLEAN_AIR_FACTOR_MQ3 );*/
   r0 = RS_AIR_val/RO_CLEAN_AIR_FACTOR_MQ3;                      //RS_AIR_val divided by RO_CLEAN_AIR_FACTOR yields the Ro 
                                                                  //according to the chart in the datasheet 
-
+/* Serial.println("roval:"); 
+   Serial.println(r0 );
+   Serial.print( "mg/L" );*/
   return r0; 
 }
 
@@ -121,24 +127,44 @@ float MQRead(int mq_pin)
   for (i=0;i<READ_SAMPLE_TIMES;i++) {
     rs += MQResistanceCalculation(analogRead(mq_pin));
     delay(READ_SAMPLE_INTERVAL);
-  }
-
+ /* Serial.println("RSval:"); 
+   Serial.println( rs);*/}
+ 
+    //Serial.println(rs );
+   
   rs = rs/READ_SAMPLE_TIMES;
-
+ //Serial.println(rs); Serial.println(Ro);
+//  Serial.println(rs/Ro);
   return rs;  
 }
 
 /*****************************  MQGetGasPercentage **********************************
 Input:   rs_ro_ratio - Rs divided by Ro
          gas_id      - target gas type
-Output:  ppm of the target gas
+Output:  mg/L of the target gas
 Remarks: This function uses different equations representing curves of each gas to 
-         calculate the ppm (parts per million) of the target gas.
+         calculate the mg/L (milligrams per litre) of the target gas.
 ************************************************************************************/ 
 int MQGetGasPercentage(float rs_ro_ratio, int gas_id)
 { 
   if ( accuracy == 0 ) {
-  if ( gas_id == GAS_ALCOHOL ) {
+    /*Serial.println("calculating mq3 ALCOHOL  gases"); 
+               Serial.print("rs_ro_ratio:  ");                                                        //debug statements that display step by step calculation of ppm
+               Serial.println(rs_ro_ratio);
+               Serial.print("gas_id:  ");                                                        //debug statements that display step by step calculation of ppm
+               Serial.println(gas_id);*/
+  if (  gas_id == GAS_ALCOHOL ) {
+    /* Serial.println("calculating mq3 ALCOHOL  gases"); 
+               Serial.print("rs_ro_ratio:  ");                                                        //debug statements that display step by step calculation of ppm
+               Serial.println(rs_ro_ratio);
+               Serial.print("log of rs_ro_ratio: ");
+               Serial.println(log10(rs_ro_ratio));
+               Serial.print("-1.487* log of rs_ro_ratio: ");
+               Serial.println((-1.487 * (log10(rs_ro_ratio))));
+              // Serial.print("pow of 10, 3.891* log of rs_ro_ratio: ");
+              // Serial.println(pow(10, ((-3.891 * (log10(rs_ro_ratio))))));
+               Serial.print("-1.487 * log of rs_ro_ratio-0.401: ");
+               Serial.println((-1.487  * (log10(rs_ro_ratio)))-0.401);*/
     return (pow(10,((-1.487*(log10(rs_ro_ratio))) - 0.401)));
   } else if ( gas_id == GAS_BENZENE ) {
     return (pow(10,((-2.659*(log10(rs_ro_ratio))) + 0.659)));

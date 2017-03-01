@@ -1,13 +1,13 @@
 #include "Gassensors.h"
 
-#define         MQ2PIN                       (0)   //define which analog input channel you are going to use
+#define         MQ2PIN                       (6)   //define which analog input channel you are going to use
 #define         MQ3PIN                       (1)
 #define         MQ4PIN                       (2)
-#define         MQ5PIN                       (3)
+#define         MQ5PIN                       (7)
 #define         MQ6PIN                       (4)
 #define         MQ7PIN                       (5)
-#define         MQ8PIN                       (6)
-#define         MQ9PIN                       (7)
+#define         MQ8PIN                       (0)
+#define         MQ9PIN                       (3)
 #define         MQ135PIN                     (5)
 
 /*//#define         Gassensor_type2                 2   //define which sensor you are going to use
@@ -54,18 +54,18 @@ Gassensors gs135(MQ135PIN,Gassensor_type[8], Gas_Name);
 void setup() {
   Serial.begin(9600);                                   //UART setup, baudrate = 9600bps
   Serial.print("Calibrating...\n");
-  Ro = gs2.MQCalibration(MQ2PIN);                       //Calibrating the sensor. Please make sure the sensor is in clean air
+  Ro = gs8.MQCalibration(MQ8PIN);                       //Calibrating the sensor. Please make sure the sensor is in clean air
                                                         //when you perform the calibration
   Serial.print("Calibration is done...\n");
-  Serial.print("Ro2=");
+  Serial.print("Ro8=");
   Serial.print(Ro);
   Serial.print("kohm");
   Serial.print("\n");
     Serial.print("Calibrating...\n");
-  Ro = gs4.MQCalibration(MQ4PIN);                       //Calibrating the sensor. Please make sure the sensor is in clean air
+  Ro = gs9.MQCalibration(MQ9PIN);                       //Calibrating the sensor. Please make sure the sensor is in clean air
                                                         //when you perform the calibration
   Serial.print("Calibration is done...\n");
-  Serial.print("Ro4=");
+  Serial.print("Ro9=");
   Serial.print(Ro);
   Serial.print("kohm");
   Serial.print("\n");
@@ -111,22 +111,22 @@ void loop() {
 //Serial.print(Gas_Name);
 //delay(5000);
 
-  gs2.printallgases(Gassensor_type[0]);
+ /* gs2.printallgases(Gassensor_type[0]);
   delay(200);
- /*  gs3.printallgases(Gassensor_type[1]);
-  delay(200);*/
+   gs3.printallgases(Gassensor_type[1]);
+  delay(200);
   gs4.printallgases(Gassensor_type[2]);
   delay(200);
- /* gs5.printallgases(Gassensor_type[3]);
+  gs5.printallgases(Gassensor_type[3]);
   delay(200);
   gs6.printallgases(Gassensor_type[4]);
   delay(200);
   gs7.printallgases(Gassensor_type[5]);
-  delay(200);
+  delay(200);*/
   gs8.printallgases(Gassensor_type[6]);
   delay(200);
   gs9.printallgases(Gassensor_type[7]);
-  delay(200);*/
+  delay(200);
   gs135.printallgases(Gassensor_type[8]);
   delay(200);
 }

@@ -87,6 +87,7 @@ class Gassensors {
     float rs_ro_ratio(uint8_t pin);
     void printallgases(uint8_t type);
   private:
-    uint8_t _pin, _type, _Gas_Name, _Rovalues[], RL_VALUE, RO_CLEAN_AIR_FACTOR;
+    uint8_t _pin, _type, _Gas_Name, RL_VALUE, RO_CLEAN_AIR_FACTOR;
+    float _Rovalues[];
 };
 #endif
