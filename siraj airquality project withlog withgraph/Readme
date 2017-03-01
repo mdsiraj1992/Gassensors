@@ -1,0 +1,8 @@
+Each Subfolder in the siraj_airquality_project folder contains a datasheet and an excel file. 
+Excel file has datapoints extracted from the sensitivity characteristics graph using webplotdigitizer app.
+Log10 of the datapoints is calculated and the points are plotted using scattergraph option.
+After obtaining the curve i have obtained the equations (both linear as well as non linear) using add trendline option .
+
+Note:
+Reason behind using Log function on the datapoints is to minimize the computational load on processor since plotting the
+data without using log function results in an exponential curve.
