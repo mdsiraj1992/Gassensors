@@ -96,8 +96,8 @@ int Gassensors::MQGetGasPercentage(float rs_ro_ratio, int gas_id )
 
     case MQ4:
       //Serial.print(F("calculating mq4 gases"));
-             //  Serial.print("rs_ro_ratio:  ");                                                        //debug statements that display step by step calculation of ppm
-             //  Serial.println(rs_ro_ratio);
+               Serial.print("rs_ro_ratio:  ");                                                        //debug statements that display step by step calculation of ppm
+               Serial.println(rs_ro_ratio);
         if ( accuracy == 1 ) {
         if ( gas_id == GAS_METHANE && rs_ro_ratio<=1.76 && rs_ro_ratio>=0.43 ) {
           return (pow(10, ((-2.849 * (log10(rs_ro_ratio))) + 2.997)));
@@ -107,8 +107,8 @@ int Gassensors::MQGetGasPercentage(float rs_ro_ratio, int gas_id )
 
     case MQ5:
       //Serial.print(F("calculating mq5 gases"));
-             //  Serial.print("rs_ro_ratio:  ");                                                        //debug statements that display step by step calculation of ppm
-             //  Serial.println(rs_ro_ratio);
+               Serial.print("rs_ro_ratio:  ");                                                        //debug statements that display step by step calculation of ppm
+               Serial.println(rs_ro_ratio);
         if ( accuracy == 1 ) {
         if ( gas_id == GAS_LPG && rs_ro_ratio<=0.71 && rs_ro_ratio>=0.14) {
           return (pow(10, ((-2.513 * (log10(rs_ro_ratio))) + 1.878)));
@@ -118,8 +118,8 @@ int Gassensors::MQGetGasPercentage(float rs_ro_ratio, int gas_id )
 
     case MQ6:
       //Serial.print(F("calculating mq6 gases"));
-              //Serial.print("rs_ro_ratio:  ");                                                        //debug statements that display step by step calculation of ppm
-            //   Serial.println(rs_ro_ratio);
+               Serial.print("rs_ro_ratio:  ");                                                        //debug statements that display step by step calculation of ppm
+               Serial.println(rs_ro_ratio);
       if ( accuracy == 1 ) {
         if ( gas_id == GAS_LPG && rs_ro_ratio<=2.05 && rs_ro_ratio>=0.39) {
           return (pow(10, ((-2.351 * (log10(rs_ro_ratio))) + 3.014)));
@@ -147,8 +147,8 @@ int Gassensors::MQGetGasPercentage(float rs_ro_ratio, int gas_id )
 
     case MQ9:
       //Serial.print(F("calculating mq9 gases"));
-              // Serial.print("rs_ro_ratio:  ");                                                        //debug statements that display step by step calculation of ppm
-             //  Serial.println(rs_ro_ratio);
+               Serial.print("rs_ro_ratio:  ");                                                        //debug statements that display step by step calculation of ppm
+               Serial.println(rs_ro_ratio);
       if ( accuracy == 1 ) {
         if ( gas_id == GAS_LPG && rs_ro_ratio<=2.06 && rs_ro_ratio>=0.33) {
           return (pow(10, ((-2.132 * (log10(rs_ro_ratio))) + 2.992)));
@@ -167,8 +167,8 @@ int Gassensors::MQGetGasPercentage(float rs_ro_ratio, int gas_id )
      // Serial.print(rs_ro_ratio);
     //  //Serial.print(gas_id);
         //          //Serial.print("gas_id      ");
-             //  Serial.print("rs_ro_ratio:  ");                                                        //debug statements that display step by step calculation of ppm
-             //  Serial.println(rs_ro_ratio);
+               Serial.print("rs_ro_ratio:  ");                                                        //debug statements that display step by step calculation of ppm
+               Serial.println(rs_ro_ratio);
         if ( accuracy == 1 ) {
          /*Serial.println("calculating mq135 co gases"); 
                Serial.print("rs_ro_ratio:  ");                                                        //debug statements that display step by step calculation of ppm

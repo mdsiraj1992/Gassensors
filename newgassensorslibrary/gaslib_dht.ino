@@ -33,6 +33,36 @@ void setup() {
 }
 
 void loop() {
+ /* /*  //Serial.println(analogRead(MQ135PIN));
+/*Serial.print("mq values");
+  Serial.println(Gassensor_type[0]);
+  Serial.println(Gassensor_type[1]);
+  Serial.println(Gassensor_type[2]);
+  Serial.println(Gassensor_type[3]);
+   Serial.print("adc reading pin4: ");
+  Serial.print(gs4.MQRead(MQ4PIN));
+    delay(500);
+  //Serial.print(Ro);
+  
+       Serial.print("rs/ro reading pin4: ");
+       //gs4.rs_ro_ratio(MQ4PIN);
+  Serial.print(gs4.rs_ro_ratio(MQ4PIN));
+   //Serial.print("printed value: ");
+    delay(500);
+  //Serial.print(Ro);
+  
+   Serial.print("       adc reading pin2: ");
+  Serial.print(gs2.MQRead(MQ2PIN)); 
+  delay(500);
+  //Serial.print(Ro);
+
+
+   Serial.print("       rs/ro reading pin2: ");
+  Serial.println(gs2.rs_ro_ratio(MQ2PIN)); 
+  delay(500);
+  //Serial.print(Ro);*/
+//Serial.print(Gas_Name);
+//delay(5000);
 
 /****************** DHT22 Temperature sensor code ****************************************/
 
@@ -80,8 +110,8 @@ void loop() {
   //delay(200);
   gs8.printallgases(Gassensor_type[6]);
   //delay(200);
-  gs135.printallgases(Gassensor_type[8]);
-  //delay(200);
+  /*gs135.printallgases(Gassensor_type[8]);
+  //delay(200);*/
 }
 
 void PM_CAL()
