@@ -48,10 +48,8 @@
 
 /***********************Software Related Macros************************************/
 
-#define         CALIBARAION_SAMPLE_TIMES     (50)    //define how many samples you are going to take in the calibration phase
-#define         CALIBRATION_SAMPLE_INTERVAL  (5)     //define the time interal(in milisecond) between each samples in the cablibration phase
-#define         READ_SAMPLE_INTERVAL         (50)    //define how many samples you are going to take in normal operation
-#define         READ_SAMPLE_TIMES            (5)     //define the time interal(in milisecond) between each samples in normal operation
+#define         READ_SAMPLE_INTERVAL         (150)    //define how many samples you are going to take in normal operation
+#define         READ_SAMPLE_TIMES            (15)     //define the time interal(in milisecond) between each samples in normal operation
                                                      
 /**********************Application Related Macros**********************************/
 
@@ -69,25 +67,24 @@
 #define         GAS_TOLUENE                   (11)
 #define         GAS_ACETONE                   (12)
 
-#define         accuracy                      (0)   //for linearcurves
-//#define         accuracy                    (1)   //for nonlinearcurves, un comment this line and comment the above line if calculations
+//#define         accuracy                      (0)   //for linearcurves
+#define         accuracy                    (1)   //for nonlinearcurves, un comment this line and comment the above line if calculations
                                                     //are to be done using non linear curve equations
                                                     
 /*****************************Gassensors class***********************************************/
 
 class Gassensors {
   public:
-    //int Gassensor_no=2;
-    Gassensors(uint8_t pin, uint8_t type, uint8_t Gas_Name);
+    Gassensors(uint8_t pin, uint8_t type);
     float MQResistanceCalculation(int raw_adc);
-    float MQCalibration(int mq_pin);
     float MQRead(int mq_pin);
     int MQGetGasPercentage(float rs_ro_ratio, int gas_id);
-    int gasppm(uint8_t pin, uint8_t type,int mqgases_id=0, uint8_t Gas_Name=0 );
+    int gasppm(uint8_t pin, uint8_t type,int mqgases_id );
     float rs_ro_ratio(uint8_t pin);
     void printallgases(uint8_t type);
   private:
-    uint8_t _pin, _type, _Gas_Name, RL_VALUE, RO_CLEAN_AIR_FACTOR;
-    float _Rovalues[];
+    uint8_t _pin, _type, RL_VALUE=1, RO_CLEAN_AIR_FACTOR;
+    float _Rovalues[9]={8.82, 65.52,  59.47,  6.79, 8.4,  1.9,  98, 8.7,  17.85}; 
+    // Run the Gassensors_calibration.ino file in clean air conditions to find out Rovalues and enter them in this array                    
 };
 #endif
