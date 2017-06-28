@@ -1,1 +1,1 @@
-I am trying to merge the individual sensor codes into a single library. This has a lot of bugs and still under progress.
+I have tried to merge the individual MQ sensor codes, DHT library and SDS011 dust sensor code into a single library.
